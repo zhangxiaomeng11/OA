@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper   
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+
+<mapper namespace = "com.tz.oa.sysmanage.mapper.DictMapper"> 
+	<sql id="all_dict_columns">
+   		 ID,VALUE,LABEL, TYPE ,DESCRIPTION ,SORT ,
+   		 PARENT_ID ,UPDATE_BY, UPDATE_DATE, REMARKS
+  	</sql>
+ 
+	<!--将通用的sql查询条件抽取出来,成为sql片段 ,给不同方法应用  -->
+	<sql id="query_dict_sql_where">			
+		<if test="type!=null"> 
+			AND TYPE= #{type}
+		</if>
+		<if test="description!=null"> 
+			AND DESCRIPTION LIKE '%${description}%'
+		</if>		 	
+	</sql>
+	
+	
+	<!-- 字典类型  统计 -->
+	<select id="getAllDictType"  resultType="java.lang.String">
+		 SELECT DISTINCT TYPE  FROM PM_SYS_DICT
+	</select> 
+	
+	<!--根据条件查询字典列表  --> 
+	<select id="getDictList" parameterType="dict" resultType="dict">
+		 SELECT
+		 <include refid="all_dict_columns"></include>
+		 FROM PM_SYS_DICT
+		 <where>
+			 <include refid="query_dict_sql_where"></include>
+		 </where>
+	</select> 
+	
+	<!--根据条件查询字典列表  --> 
+	<select id="getDictById" parameterType="java.lang.Long" resultType="dict">
+		 SELECT
+		 <include refid="all_dict_columns"></include>
+		 FROM PM_SYS_DICT WHERE ID = #{dictId}
+		 
+	</select> 
+	
+	<!--增加字典  -->
+	<insert id="addDict" parameterType="dict">
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			SELECT  LAST_INSERT_ID() as id		
+		</selectKey>
+		
+		INSERT INTO PM_SYS_DICT(VALUE,LABEL, TYPE ,DESCRIPTION ,SORT ,
+   							 PARENT_ID ,UPDATE_BY, UPDATE_DATE, REMARKS)
+   		VALUES(#{value},#{label},#{type},#{description},#{sort},
+   				#{parentId},#{updateBy},#{updateDate},#{remarks}
+   		 )					 	
+	</insert>
+	
+	<!-- 删除字典 -->
+	<delete id="delDict" parameterType="java.lang.Long">
+		DELETE FROM PM_SYS_DICT WHERE ID = #{dictId}
+	</delete>
+	
+	<!--修改字典  -->
+	<update id="updateDict" parameterType="dict">	
+		UPDATE PM_SYS_DICT  
+			<set> 
+				<if test="value != null">
+		            VALUE = #{value},
+		        </if>
+		        <if test="label != null">
+		            LABEL = #{label},
+		        </if>
+		   
+		        <if test="type != null">
+		            TYPE = #{type},
+		        </if>
+		        <if test="description != null">
+		            DESCRIPTION = #{description},
+		        </if>	
+		        <if test="sort != null">
+		            SORT = #{sort},
+		        </if>
+		        <if test="parentId != null">
+		            PARENT_ID = #{parentId},
+		        </if>
+		        <if test="updateBy != null">
+		            UPDATE_BY = #{updateBy},
+		        </if>
+		        <if test="updateDate != null">
+		            UPDATE_DATE = #{updateDate},
+		        </if>
+		        <if test="remarks != null">
+		            REMARKS = #{remarks},
+		        </if>		 
+			</set>
+			WHERE ID = #{id}
+	</update>
+	
+	
+</mapper>

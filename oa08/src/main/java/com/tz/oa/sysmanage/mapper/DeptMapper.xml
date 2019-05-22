@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper   
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+
+<mapper namespace="com.tz.oa.sysmanage.mapper.DeptMapper">
+	 
+	<sql id="all_dept_columns">
+   		 ID,PARENT_ID,NAME,SORT,CODE,
+   		 ADDRESS,MASTER,PHONE,FAX,EMAIL,
+   		 UPDATE_BY,UPDATE_DATE,REMARKS
+  	</sql>
+	 
+	<!--将通用的sql查询条件抽取出来,成为sql片段 ,给不同方法应用  -->
+	<!-- <sql id="query_area_sql_where">			
+		<if test="userName!=null"> 
+			AND USER_NAME LIKE '%${userName}%'
+ 		</if>
+		<if test="loginName!=null"> 
+			AND LOGIN_NAME= #{loginName}
+		</if>
+		<if test="password!=null"> 
+			AND PASSWORD= #{password}
+		</if>	 		
+	</sql> -->
+	 
+	<select id="getDeptListByUserId" parameterType="java.lang.Long" resultType="dept">
+		SELECT C.ID,C.PARENT_ID,C.NAME,C.SORT,C.CODE ,
+		C.ADDRESS,C.MASTER,C.PHONE,C.FAX,C.EMAIL,
+		C.UPDATE_BY,C.UPDATE_DATE,C.REMARKS
+		FROM PM_SYS_USER_ROLE A ,PM_SYS_ROLE_DEPT B ,PM_SYS_DEPT C 
+		WHERE A.USER_ID=#{userId} AND A.ROLE_ID = B.ROLE_ID AND B.DEPT_ID = C.ID 
+	</select> 
+	
+	<select id="getAllDeptList"  resultType="dept">
+		SELECT  
+		<include refid="all_dept_columns" />
+		FROM PM_SYS_DEPT
+		<!--where 标签两个用途:1:添加sql中where关键字 2:判断第一个条件前面不需要AND-->
+		<!-- <where>
+		 	引入sql片段 
+		 	<include refid="query_user_sql_where"></include>
+		 </where> -->	
+	</select> 
+	 
+	<select id="getDeptById" parameterType="long" resultType="dept"> 
+		<!--此处稍微有点特殊,需要讲父节点名称查出来  -->
+		SELECT  C.ID,C.PARENT_ID,D.NAME AS PARENT_NAME,C.NAME,
+ 		C.SORT,C.CODE,C.ADDRESS,C.MASTER,C.PHONE,C.FAX,C.EMAIL,
+ 		C.UPDATE_BY,C.UPDATE_DATE,C.REMARKS
+		FROM PM_SYS_DEPT C LEFT JOIN PM_SYS_DEPT D 
+		ON C.PARENT_ID=D.ID WHERE C.ID = #{ID}
+	
+		 	
+	</select>
+	
+	<select id="getChildCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM PM_SYS_DEPT WHERE PARENT_ID= #{ID}
+	</select>
+	
+	
+	 <!--增加单条用户记录  -->
+	<insert id="addDept" parameterType = "dept">	
+		<!--类似于与oracle数据库,需要调用序列  -->
+		<!-- <selectKey keyProperty="userId" resultType="long" order = "BEFORE">
+			SELECT IDSEQUNCE.NEXTVAL FROM DUAL AS userId
+		</selectKey> 
+			INSERT INTO PM_SYS_USER(USER_ID,USER_NAME,LOGIN_NAME,BIRTHDAY,TV_UPDATE)
+			VALUES(#{userId},#{userName},#{loginName},#{birthday},#{tvUpdate})
+		
+		-->		
+		<!--在类似于mysql的数据库,有自增长id的设置时,在插入成功后,返回主键,放入对象中  -->
+		<selectKey keyProperty="id" resultType="long" order="AFTER" >
+               SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        	  
+		INSERT INTO PM_SYS_DEPT(PARENT_ID,NAME,SORT,CODE,
+					 ADDRESS,MASTER,PHONE,FAX,EMAIL,
+					UPDATE_BY, UPDATE_DATE,REMARKS)
+		VALUES(#{parentId},#{name},#{sort},#{code},
+				#{address},#{master},#{phone},#{fax},#{email},
+				#{updateBy},#{updateDate},#{remarks})
+	</insert>
+	 
+	<!--删除用户记录 -->
+	<delete id="delDept" parameterType="java.lang.Long">
+		DELETE FROM PM_SYS_DEPT WHERE ID=#{id}
+	</delete>
+
+	<!--修改-->
+	<update id="updateDept" parameterType = "dept">
+		UPDATE PM_SYS_DEPT  
+		<set> 				
+			<if test="parentId != null">
+	            PARENT_ID = #{parentId},
+	        </if>
+	        <if test="name != null">
+	            NAME = #{name},
+	        </if>	   
+	        <if test="sort != null">
+	            SORT = #{sort},
+	        </if>
+	        <if test="code != null">
+	            CODE = #{code},
+	        </if>	         
+ 	        <if test="master != null">
+	            ADDRESS = #{master},
+	        </if>
+	        <if test="master != null">
+	            MASTER = #{master},
+	        </if>	   
+	        <if test="phone != null">
+	            PHONE = #{phone},
+	        </if>
+	        <if test="fax != null">
+	            FAX = #{fax},
+	        </if>
+	        
+	        <if test="email != null">
+	            EMAIL = #{email},
+	        </if>	        
+	        <if test="updateBy != null">
+	            UPDATE_BY = #{updateBy},
+	        </if>
+	        <if test="updateDate != null">
+	            UPDATE_DATE = #{updateDate},
+	        </if>
+	        <if test="remarks != null">
+	            REMARKS = #{remarks},
+	        </if>		 
+		</set>
+		WHERE ID = #{id}
+	</update>
+ 
+</mapper>

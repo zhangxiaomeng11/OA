@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper   
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+
+<mapper namespace = "com.tz.oa.sysmanage.mapper.AreaMapper"> 
+	<sql id="all_area_columns">
+   		 ID,PARENT_ID,NAME,SORT,CODE,
+   		 UPDATE_BY,UPDATE_DATE,REMARKS
+  	</sql>
+   	<!--根据用户id查询区域列表  -->
+    <select id="getAreaListByUserId" parameterType="java.lang.Long" resultType="area">
+		SELECT C.ID,C.PARENT_ID,C.NAME,C.SORT,C.CODE,
+		C.UPDATE_BY,C.UPDATE_DATE,C.REMARKS
+		FROM PM_SYS_USER_ROLE A ,PM_SYS_ROLE_AREA B ,PM_SYS_AREA C 
+		WHERE A.USER_ID= #{userId} AND A.ROLE_ID = B.ROLE_ID AND B.AREA_ID = C.ID 
+	</select> 
+	
+	<!-- 获取所有的区域列表-->
+	<select id="getAllAreaList"  resultType="area">
+		 SELECT 
+		 <include refid="all_area_columns"></include>
+		 FROM PM_SYS_AREA
+	</select> 
+	
+	<!--获取某个节点的子节点数目  -->
+	<select id="getChildCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM PM_SYS_AREA WHERE PARENT_ID = #{parentId};	
+	</select>
+	
+	
+	<!--获取区域明细  -->
+	<select id="getAreaById" parameterType="java.lang.Long" resultType="area">
+	 	<!--此处稍微有点特殊,需要讲父节点名称查出来  -->
+		SELECT  C.ID,C.PARENT_ID,D.NAME AS PARENT_NAME,C.NAME,
+ 		C.SORT,C.CODE,C.UPDATE_BY,C.UPDATE_DATE,C.REMARKS
+		FROM PM_SYS_AREA C LEFT JOIN PM_SYS_AREA D 
+		ON C.PARENT_ID=D.ID WHERE C.ID = #{ID}	 
+ 	</select>
+	
+	
+	<!--增加区域  -->
+	<insert id="addArea" parameterType="area">
+		<!--在类似于mysql的数据库,有自增长id的设置时,在插入成功后,返回主键,放入对象中  -->
+		<selectKey keyProperty="id" resultType="long" order="AFTER" >
+               SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        	  
+		INSERT INTO PM_SYS_AREA(PARENT_ID,NAME,SORT,CODE,
+					UPDATE_BY, UPDATE_DATE,REMARKS)
+		VALUES(#{parentId},#{name},#{sort},#{code},
+				#{updateBy},#{updateDate},#{remarks})	
+				
+	</insert>
+	
+	<!--删除区域记录  -->
+  	<delete id="delArea" parameterType="java.lang.Long">
+  		DELETE FROM PM_SYS_AREA WHERE ID = #{id} 		
+  	</delete>
+  	
+  	<!--修改区域  -->
+  	<update id="updateArea" parameterType="area">
+  		UPDATE PM_SYS_AREA  
+		<set> 				
+			<if test="parentId != null">
+	            PARENT_ID = #{parentId},
+	        </if>
+	        <if test="name != null">
+	            NAME = #{name},
+	        </if>	   
+	        <if test="sort != null">
+	            SORT = #{sort},
+	        </if>
+	        <if test="code != null">
+	            Code = #{code},
+	        </if>	         
+	        <if test="updateBy != null">
+	            UPDATE_BY = #{updateBy},
+	        </if>
+	        <if test="updateDate != null">
+	            UPDATE_DATE = #{updateDate},
+	        </if>
+	        <if test="remarks != null">
+	            REMARKS = #{remarks},
+	        </if>		 
+		</set>
+		WHERE ID = #{id}
+  	</update>
+  	
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns="http://java.sun.com/xml/ns/javaee" 
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+ http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" 
+ id="WebApp_ID" version="3.0">
+ 
+  <display-name>oa08</display-name>
+  <welcome-file-list>    
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  
+  <!--配置监听request和session信息变化的监听器  -->
+  <listener>
+  	<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+  </listener>
+  
+  
+  <!--加载spring的ioc容器
+  	spring的配置文件一般要跟springmvc的配置文件分开  -->
+  <context-param>
+  	<param-name>contextConfigLocation</param-name>
+  	<param-value>classpath:applicationContext.xml</param-value>
+  </context-param> 
+  <listener>
+	 	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>  
+  </listener>
+  
+  <!-- 配置springmvc的DispatcherServlet 
+	springMVC的ioc容器包括控制层的注册以及涉及到springmvc的相关配置 -->
+	<!--配置前端的控制器 (servlet),拦截所有请求  -->
+	<servlet>
+ 		<servlet-name>springmvc</servlet-name>
+ 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+ 		<!--如果不配置此初始化参数，springmvc会默认去加载classpath下面名称为  
+ 			[servlet-name]-servlet.xml(springmvc-serlvet.xml) -->
+ 		<init-param>
+ 			<param-name>contextConfigLocation</param-name>
+ 			<param-value>classpath:springmvc.xml</param-value>
+ 		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<!--
+			1:可以配置*.do,*.action 需要你在所有页面请求的url带.do或者.action的后缀
+			2:也可以配置/ ，此工程所有请求（包括.do .action,js/image/css)都会由springmvc解析
+				所以要对上述的静态文件资源进行过滤
+			3:配置 /* ，返回的jsp也会有springmvc解析 ，不支持
+			总结:一般配置*.do，或者 *.action;如果需要restful风格的接口,最后用/来标识
+		  -->
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+ 
+	<!-- springmvc提供的乱码过滤器 -->
+	  <filter>
+		  <filter-name>CharacterEncodingFilter</filter-name>
+		  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		  <init-param>
+		    <param-name>encoding</param-name>
+		    <param-value>UTF-8</param-value>
+		  </init-param>
+		</filter>
+		<filter-mapping>
+		  <filter-name>CharacterEncodingFilter</filter-name>
+		  <url-pattern>/*</url-pattern>
+		</filter-mapping>
+  
+  
+  
+</web-app>

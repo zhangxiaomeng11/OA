@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper   
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+
+<mapper namespace = "com.tz.oa.sysmanage.mapper.RoleMapper"> 
+	<sql id="all_role_columns">
+   		 ID,NAME, UPDATE_BY,UPDATE_DATE,REMARKS
+  	</sql>
+   
+	<!-- 获取所有的角色列表-->
+	<select id="getAllRoleList"  resultType="role">
+		 SELECT 
+		 <include refid="all_role_columns"></include>
+		 FROM PM_SYS_ROLE
+	</select>
+	
+	<!--根据角色id查询角色信息  -->	
+	<select id="getRoleById" parameterType="long" resultType="role"> 
+		SELECT  
+		<include refid="all_role_columns" />
+		FROM PM_SYS_ROLE
+		WHERE ID = #{id}		 	
+	</select>
+	
+	<!--根据角色id查询角色菜单对应关系  -->
+	<select id="getMenuListByRoleId" parameterType="long" resultType="roleToMenu"> 
+		SELECT ROLE_ID , MENU_ID 
+ 		FROM PM_SYS_ROLE_MENU
+		WHERE ROLE_ID = #{roleId}		 	
+	</select>
+	<!--根据角色id查询角色部门对应关系  -->
+	<select id="getDeptListByRoleId" parameterType="long" resultType="roleToDept"> 
+		SELECT ROLE_ID ,DEPT_ID 
+ 		FROM PM_SYS_ROLE_DEPT
+		WHERE ROLE_ID = #{roleId}		 	
+	</select>
+	
+	<!--根据角色id查询角色区域对应关系  -->
+	<select id="getAreaListByRoleId" parameterType="long" resultType="roleToArea"> 
+		SELECT ROLE_ID ,AREA_ID 
+ 		FROM PM_SYS_ROLE_AREA
+		WHERE ROLE_ID = #{roleId}		 	
+	</select>
+	
+	<!--增加角色对象  --> 
+	<insert id="addRole" parameterType="role">
+		<!--在类似于mysql的数据库,有自增长id的设置时,在插入成功后,返回主键,放入对象中  -->
+		<selectKey keyProperty="id" resultType="long" order="AFTER" >
+               SELECT LAST_INSERT_ID() as id
+        </selectKey>
+        	  
+		INSERT INTO PM_SYS_ROLE(NAME,UPDATE_BY, UPDATE_DATE,REMARKS)
+		VALUES(#{name},#{updateBy},#{updateDate},#{remarks})	
+	</insert> 
+	
+	<!--批量 增加角色菜单对应关系-->
+	<insert id="addRoleToMenuBatch" parameterType = "roleToMenu">	
+		INSERT INTO PM_SYS_ROLE_MENU(ROLE_ID,MENU_ID)
+		VALUES
+		<foreach collection="list" item="roleToMenu" index="index" separator="," >  
+        	(#{roleToMenu.roleId},#{roleToMenu.menuId})  
+   		</foreach> 
+	</insert>
+	
+	<!--批量 增加角色部门对应关系-->
+	<insert id="addRoleToDeptBatch" parameterType = "roleToDept">	
+		INSERT INTO PM_SYS_ROLE_DEPT(ROLE_ID,DEPT_ID)
+		VALUES
+		<foreach collection="list" item="roleToDept" index="index" separator="," >  
+        	(#{roleToDept.roleId},#{roleToDept.deptId})  
+   		</foreach> 
+	</insert>
+	
+	<!--批量 增加角色区域对应关系-->
+	<insert id="addRoleToAreaBatch" parameterType = "roleToArea">	
+		INSERT INTO PM_SYS_ROLE_AREA(ROLE_ID,AREA_ID)
+		VALUES
+		<foreach collection="list" item="roleToArea" index="index" separator="," >  
+        	(#{roleToArea.roleId},#{roleToArea.areaId})  
+   		</foreach> 
+	</insert>
+	<!--增加角色菜单对应关系  -->
+	<insert id="addRoleToMenu" parameterType = "roleToMenu">	
+		INSERT INTO PM_SYS_ROLE_MENU(ROLE_ID,MENU_ID)
+		VALUES(#{roleId},#{menuId})  
+	</insert>
+	<!--增加角色部门对应关系  -->
+	<insert id="addRoleToDept" parameterType = "roleToDept">	
+		INSERT INTO PM_SYS_ROLE_DEPT(ROLE_ID,DEPT_ID)
+		VALUES(#{roleId},#{deptId})  
+	</insert>
+	<!--增加角色区域对应关系  -->
+	<insert id="addRoleToArea" parameterType = "roleToArea">	
+		INSERT INTO PM_SYS_ROLE_AREA(ROLE_ID,AREA_ID)
+		VALUES(#{roleId},#{areaId})  
+	</insert>
+	
+	
+	<!--根据角色id删除角色菜单对应表  -->
+	<delete id="delRoleMenuByRoleId" parameterType="long" > 
+		DELETE FROM  PM_SYS_ROLE_MENU  WHERE ROLE_ID =  #{roleId}		 	
+	</delete>
+	
+	<!--根据角色id删除角色部门对应表  -->
+	<delete id="delRoleDeptByRoleId" parameterType="long" > 
+		DELETE FROM  PM_SYS_ROLE_DEPT  WHERE ROLE_ID =  #{roleId}		 			 	
+	</delete>
+	
+	<!--根据角色id删除角色区域对应表  -->
+	<delete id="delRoleAreaByRoleId" parameterType="long"> 
+		DELETE FROM  PM_SYS_ROLE_AREA  WHERE ROLE_ID =  #{roleId}		 		 	
+	</delete>
+	
+	
+	<!--根据菜单id删除所有菜单角色对应关系记录  --> 
+	<delete id="delRoleMenuByMenuId" parameterType="long" > 
+		DELETE FROM  PM_SYS_ROLE_MENU  WHERE MENU_ID =  #{menuId}		 	
+	</delete>
+	<!--根据部门id删除所有部门角色对应关系记录  -->
+	<delete id="delRoleDeptByDeptId" parameterType="long" > 
+		DELETE FROM  PM_SYS_ROLE_DEPT  WHERE DEPT_ID =  #{deptId}		 			 	
+	</delete>
+	<!--根据区域id删除所有区域角色对应关系记录  -->
+	<delete id="delRoleAreaByAreaId" parameterType="long"> 
+		DELETE FROM  PM_SYS_ROLE_AREA  WHERE AREA_ID =  #{areaId}		 		 	
+	</delete>
+	 
+	<!--删除角色  -->
+	<delete id="delRole" parameterType="java.lang.Long">
+		DELETE FROM PM_SYS_ROLE WHERE ID=#{id}
+	</delete>
+	 
+	<!--修改-->
+	<update id="updateRole" parameterType = "role">
+		UPDATE PM_SYS_ROLE  
+		<set> 							 
+	        <if test="name != null">
+	            NAME = #{name},
+	        </if>	   	                 
+	        <if test="updateBy != null">
+	            UPDATE_BY = #{updateBy},
+	        </if>
+	        <if test="updateDate != null">
+	            UPDATE_DATE = #{updateDate},
+	        </if>
+	        <if test="remarks != null">
+	            REMARKS = #{remarks},
+	        </if>		 
+		</set>
+		WHERE ID = #{id}
+	</update>
+	 	 
+</mapper>

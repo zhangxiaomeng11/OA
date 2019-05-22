@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper   
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+
+<mapper namespace="com.tz.oa.activitimanage.mapper.LeaveBeanMapper">
+	  
+	<sql id="all_leavebean_columns">
+   		 LEAVE_ID,LEAVE_USER_ID,LEAVE_DATE,
+   		 LEAVE_DAYS,LEAVE_REASON,REMARK,LEAVE_STATE
+  	</sql>
+	 
+  	 
+	<select id="getLeaveBeanList" parameterType = "leaveBean" resultType="leaveBean">
+		
+		 SELECT A.LEAVE_ID,A.LEAVE_USER_ID,B.USER_NAME AS LEAVE_USER_NAME,A.LEAVE_DATE,
+   		 A.LEAVE_DATE,A.LEAVE_DAYS,A.LEAVE_REASON,
+   		 A.REMARK,A.LEAVE_STATE,A.PROCESS_INSTANCE_ID
+   		 FROM PM_ACTIVITI_LEAVE A,PM_SYS_USER B
+   		 WHERE  A.LEAVE_USER_ID = B.USER_ID 		 
+		<if test="leaveUserId!=null"> 
+			AND A.LEAVE_USER_ID = #{leaveUserId}
+ 		</if>
+		 	
+	</select>   
+	
+	<!--根据用户ID,查询用户明细信息,包含部门信息  -->
+	<!-- <select id="getLeaveBeanById" parameterType="long" resultType="leaveBean"> 
+		SELECT 
+		<include refid="all_leavebean_columns" />
+		FROM PM_ACTIVITI_LEAVE WHERE LEAVE_ID= #{leaveId}		
+	</select> -->
+	 <select id="getLeaveBeanById" parameterType="long" resultType="leaveBean"> 
+		 SELECT A.LEAVE_ID,A.LEAVE_USER_ID,B.USER_NAME AS LEAVE_USER_NAME,A.LEAVE_DATE,
+   		 A.LEAVE_DATE,A.LEAVE_DAYS,A.LEAVE_REASON,
+   		 A.REMARK,A.LEAVE_STATE,A.PROCESS_INSTANCE_ID
+   		 FROM PM_ACTIVITI_LEAVE A,PM_SYS_USER B
+   		 WHERE  A.LEAVE_USER_ID = B.USER_ID AND A.LEAVE_ID= #{leaveId}	
+ 	</select>
+	 
+	<!--增加单条记录  -->
+	<insert id="addLeaveBean" parameterType = "leaveBean">			 
+		<!--在类似于mysql的数据库,有自增长id的设置时,在插入成功后,返回主键,放入对象中  -->
+		<selectKey keyProperty="leaveId" resultType="long" order="AFTER" >
+               SELECT LAST_INSERT_ID() as leaveId
+        </selectKey>        	  
+		INSERT INTO PM_ACTIVITI_LEAVE(LEAVE_USER_ID,
+   						 LEAVE_DATE,LEAVE_DAYS,LEAVE_REASON,
+   		 				 REMARK,LEAVE_STATE)
+		VALUES(#{leaveUserId},#{leaveDate},#{leaveDays},#{leaveReason},
+				#{remark},#{leaveState})
+	</insert>
+	 
+	<!--删除用户记录 -->
+	<delete id="delLeaveBean" parameterType="java.lang.Long">
+		DELETE FROM PM_ACTIVITI_LEAVE WHERE LEAVE_ID=#{leaveId}
+	</delete>
+	
+	<update id="updateLeaveBeanState" >
+		UPDATE PM_ACTIVITI_LEAVE SET LEAVE_STATE=#{1} WHERE LEAVE_ID = #{0}		 
+	</update>
+	
+	<update id="updateLeaveBeanProcessInstanceId" >
+		UPDATE PM_ACTIVITI_LEAVE SET PROCESS_INSTANCE_ID=#{1} WHERE LEAVE_ID = #{0}		 
+	</update>
+		
+	<!--修改某条用户记录 (注意:修改对象必须包含USER_ID)-->
+	<update id="updateLeaveBean" parameterType = "leaveBean">
+		UPDATE PM_ACTIVITI_LEAVE  
+		<set> 
+			<if test="leaveUserId != null">
+	            LEAVE_USER_ID = #{leaveUserId},
+	        </if>
+	        <if test="leaveDate != null">
+	            LEAVE_DATE = #{leaveDate},
+	        </if>
+	   
+	        <if test="leaveDays != null">
+	            LEAVE_DAYS = #{leaveDays},
+	        </if>
+	   
+	        <if test="leaveReason != null">
+	            LEAVE_REASON = #{leaveReason},
+	        </if>
+	        <if test="remark != null">
+	            REMARK = #{remark},
+	        </if>	
+	        <if test="leaveState != null">
+	            LEAVE_STATE = #{leaveState},
+	        </if>	         	 
+		</set>
+		WHERE LEAVE_ID = #{leaveId}
+	</update>
+ 
+</mapper>
